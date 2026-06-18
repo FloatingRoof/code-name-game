@@ -1,0 +1,1 @@
+{"root":["./src/app.ts","./src/config.ts","./src/index.ts","./src/__tests__/room.test.ts","./src/__tests__/serializers.test.ts","./src/domain/room.ts","./src/domain/defaultroom.ts","./src/domain/result.ts","./src/domain/roomcode.ts","./src/domain/serializers.ts","./src/domain/store.ts"],"version":"5.9.3"}

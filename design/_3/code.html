@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>INTEL_CORE: Team Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-fixed-variant": "#574500",
+                "tertiary-fixed-dim": "#eec200",
+                "secondary-container": "#bb0112",
+                "on-primary": "#002a78",
+                "on-tertiary-fixed": "#231b00",
+                "tertiary": "#eec200",
+                "inverse-primary": "#0053db",
+                "secondary": "#ffb4ab",
+                "primary-fixed-dim": "#b4c5ff",
+                "surface-container-low": "#131b2e",
+                "tertiary-fixed": "#ffe083",
+                "tertiary-container": "#cea700",
+                "on-background": "#dae2fd",
+                "outline": "#8d90a0",
+                "on-secondary-fixed-variant": "#93000b",
+                "on-primary-container": "#eeefff",
+                "surface-container-high": "#222a3d",
+                "on-error": "#690005",
+                "primary": "#b4c5ff",
+                "on-tertiary-container": "#4e3d00",
+                "primary-fixed": "#dbe1ff",
+                "surface-container-highest": "#2d3449",
+                "surface-bright": "#31394d",
+                "surface-container": "#171f33",
+                "on-secondary-container": "#ffc8c1",
+                "on-primary-fixed-variant": "#003ea8",
+                "background": "#0b1326",
+                "surface-dim": "#0b1326",
+                "error": "#ffb4ab",
+                "on-secondary-fixed": "#410002",
+                "inverse-surface": "#dae2fd",
+                "on-secondary": "#690005",
+                "secondary-fixed-dim": "#ffb4ab",
+                "on-surface": "#dae2fd",
+                "surface-container-lowest": "#060e20",
+                "on-surface-variant": "#c3c6d7",
+                "inverse-on-surface": "#283044",
+                "primary-container": "#2563eb",
+                "surface-tint": "#b4c5ff",
+                "outline-variant": "#434655",
+                "surface": "#0b1326",
+                "on-tertiary": "#3c2f00",
+                "secondary-fixed": "#ffdad6",
+                "on-primary-fixed": "#00174b",
+                "error-container": "#93000a",
+                "on-error-container": "#ffdad6",
+                "surface-variant": "#2d3449"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "margin-mobile": "16px",
+                "gutter": "16px",
+                "margin-desktop": "40px",
+                "base": "4px",
+                "card-gap": "12px"
+            },
+            "fontFamily": {
+                "headline-lg-mobile": ["JetBrains Mono"],
+                "display-lg": ["JetBrains Mono"],
+                "headline-lg": ["JetBrains Mono"],
+                "label-sm": ["JetBrains Mono"],
+                "body-md": ["Inter"],
+                "label-md": ["JetBrains Mono"],
+                "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .hazard-pattern {
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 0, 0, 0.05) 10px,
+                rgba(0, 0, 0, 0.05) 20px
+            );
+        }
+
+        .scanline {
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.03) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            background-size: 100% 4px;
+        }
+
+        .crt-flicker {
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.98; }
+            50% { opacity: 1; }
+            100% { opacity: 0.99; }
+        }
+
+        .team-card-hover:hover .team-glow {
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md dark selection:bg-tertiary selection:text-on-tertiary">
+<!-- TopAppBar (From Shared Components) -->
+<header class="flex justify-between items-center px-margin-desktop w-full h-20 fixed top-0 z-50 border-b border-outline-variant bg-surface dark:bg-surface">
+<div class="flex items-center gap-8">
+<h1 class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary dark:text-primary uppercase">
+                INTEL_CORE: CODENAMES
+            </h1>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant dark:text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary transition-all duration-200 active:scale-95 duration-100 cursor-pointer font-label-md text-label-md" href="#">Dossier</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary transition-all duration-200 active:scale-95 duration-100 cursor-pointer font-label-md text-label-md" href="#">Field Map</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary transition-all duration-200 active:scale-95 duration-100 cursor-pointer font-label-md text-label-md" href="#">Comms</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-medium hover:text-primary dark:hover:text-primary transition-all duration-200 active:scale-95 duration-100 cursor-pointer font-label-md text-label-md" href="#">Archives</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors active:scale-95" data-icon="terminal">terminal</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors active:scale-95" data-icon="settings">settings</button>
+<div class="w-10 h-10 rounded-full border border-outline-variant overflow-hidden">
+<img alt="Agent Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuvxVpi-T39DZRD0KfMQ-3s38A3Xuauiox-ESKh7llDWho3fLzey1CcWqMdcOtG4aGknojTYEX0-uIuLlTBakuxto5zclewbMSoHiAo6hLzvD730eum32nyUSInOXugYzFKqlXls5N0OTOif9BJ8ORAF9GnY2Rw1NQnZYWJW34GeH3cxzThzYJ3WNMPPAcPp_felaWAU1JMKvr_m5KzMUGtoJrz6Li_DUj1xt7KZZkbvq8Y0lQYUAMN-MgGehjd6S0ETOn0SMRDT4"/>
+</div>
+</div>
+</header>
+<main class="pt-20 min-h-screen flex flex-col md:flex-row relative overflow-hidden">
+<!-- Background Atmosphere Shaders -->
+<div class="absolute inset-0 z-0 pointer-events-none opacity-40">
+
+</div>
+<!-- Team Selection Container -->
+<div class="flex flex-col md:flex-row w-full h-full min-h-[calc(100vh-80px)] z-10">
+<!-- Red Team Section -->
+<section class="group relative flex-1 flex flex-col items-center justify-center p-8 transition-all duration-500 overflow-hidden border-b md:border-b-0 md:border-r border-outline-variant/30 hover:flex-[1.2]">
+<!-- Interactive Team Background Image -->
+<div class="absolute inset-0 z-[-1] opacity-20 grayscale group-hover:grayscale-0 group-hover:opacity-40 transition-all duration-1000">
+<img class="w-full h-full object-cover" data-alt="A high-tech underground tactical operations center bathed in deep crimson light. Screens display complex wireframes and intercepted data streams. The atmosphere is tense and urgent, featuring a modern espionage aesthetic with dark shadows and sharp, brutalist architecture. Crimson accents illuminate the server racks and metal surfaces." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-7tn2nCMbV7qdUERSBbyxqqgPrMc6fBkFfQ3uBGMtlCYPXlBOuOL_1Ae93XVGNY6pqE63Wo6oKnL6CFFxu2n8uARQ33Nrqr78rxLT8UeGzpP0lbaTbSrLoIBCuPHnGru-9-Yy3tO31URw0eUCc0uDdvxLcFbtoIcO9i8i2IGd9g43zIm-CmUpnOt1WfkOPqB7jmbPifSu9KrYlHkhp2esLfViVSYbUQg9Qc8UWVm5mqDfA8rPXGK8BtDePdCmD6kEygO8cOBrKFU"/>
+</div>
+<div class="team-glow absolute inset-0 bg-secondary-container/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+<div class="scanline absolute inset-0 pointer-events-none"></div>
+<div class="text-center max-w-md w-full">
+<div class="inline-flex items-center gap-2 px-4 py-1 bg-secondary-container/20 border border-secondary text-secondary font-label-md mb-6 uppercase tracking-widest crt-flicker">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">security</span>
+                        Red Intelligence
+                    </div>
+<h2 class="font-display-lg text-display-lg text-secondary mb-2 tracking-tight">OPERATIVE_RED</h2>
+<p class="font-body-md text-on-surface-variant mb-12 uppercase tracking-tighter opacity-80">Sector 07 Strike Team</p>
+<div class="flex flex-col gap-6 items-center">
+<!-- Agent Count -->
+<div class="flex items-center gap-8 py-6 border-y border-outline-variant/50 w-full justify-center">
+<div class="text-center">
+<span class="block font-headline-lg text-headline-lg text-on-surface font-bold">04</span>
+<span class="font-label-sm text-on-surface-variant/70 uppercase">Agents Ready</span>
+</div>
+<div class="w-[1px] h-12 bg-outline-variant/50"></div>
+<div class="text-center">
+<span class="block font-headline-lg text-headline-lg text-on-surface font-bold">01</span>
+<span class="font-label-sm text-on-surface-variant/70 uppercase">Spymaster</span>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full py-4 bg-secondary-container hover:bg-secondary text-on-secondary-container font-headline-lg text-headline-lg-mobile transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 border-2 border-secondary shadow-[0_0_20px_rgba(187,1,18,0.3)]">
+                            JOIN RED
+                            <span class="material-symbols-outlined">trending_flat</span>
+</button>
+</div>
+</div>
+<!-- Subtle Decorative Terminal Element -->
+<div class="absolute bottom-6 left-6 font-label-sm text-secondary/30 hidden md:block">
+                    [SYS_AUTH: RED_OPS_PENDING]
+                </div>
+</section>
+<!-- Blue Team Section -->
+<section class="group relative flex-1 flex flex-col items-center justify-center p-8 transition-all duration-500 overflow-hidden hover:flex-[1.2]">
+<!-- Interactive Team Background Image -->
+<div class="absolute inset-0 z-[-1] opacity-20 grayscale group-hover:grayscale-0 group-hover:opacity-40 transition-all duration-1000">
+<img class="w-full h-full object-cover" data-alt="A cold, pristine digital data center filled with glowing blue server arrays and glass panels. The scene is professional and highly advanced, utilizing a royal blue and slate grey color palette. High-key light-mode accents contrast with deep oceanic shadows. The mood is calm, analytical, and secretive, evoking a state-of-the-art global surveillance hub." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGDBilVweVZG8kjaPS78JFhRpfExDoAkJCm2yI7kpJd1zBkv6GQnI-1MOX5Dl7rknB8LmFxQBT38H5p1LD9nelRRfeRzFukERpvY-w4HHxFzLdyFOZzPDXYmjM_GmB-ggHiP0L_y6c-4E8FGCJEWf68MVOVmqBI1vXBd0hJOcErxCPElkDvTfE2JR9Xk2evRKblMEO9HMxz0PnbNTg5sQeOnueOVBKo_NhQcObyON7FaUtkWivJsn9RhcCylwthkeM7MtWo7kPqFM"/>
+</div>
+<div class="team-glow absolute inset-0 bg-primary-container/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+<div class="scanline absolute inset-0 pointer-events-none"></div>
+<div class="text-center max-w-md w-full">
+<div class="inline-flex items-center gap-2 px-4 py-1 bg-primary-container/20 border border-primary text-primary font-label-md mb-6 uppercase tracking-widest crt-flicker">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+                        Blue Intelligence
+                    </div>
+<h2 class="font-display-lg text-display-lg text-primary mb-2 tracking-tight">OPERATIVE_BLUE</h2>
+<p class="font-body-md text-on-surface-variant mb-12 uppercase tracking-tighter opacity-80">Global Command Division</p>
+<div class="flex flex-col gap-6 items-center">
+<!-- Agent Count -->
+<div class="flex items-center gap-8 py-6 border-y border-outline-variant/50 w-full justify-center">
+<div class="text-center">
+<span class="block font-headline-lg text-headline-lg text-on-surface font-bold">03</span>
+<span class="font-label-sm text-on-surface-variant/70 uppercase">Agents Ready</span>
+</div>
+<div class="w-[1px] h-12 bg-outline-variant/50"></div>
+<div class="text-center">
+<span class="block font-headline-lg text-headline-lg text-on-surface font-bold">00</span>
+<span class="font-label-sm text-on-surface-variant/70 uppercase">Spymaster</span>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full py-4 bg-primary-container hover:bg-primary text-on-primary-container font-headline-lg text-headline-lg-mobile transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 border-2 border-primary shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+                            JOIN BLUE
+                            <span class="material-symbols-outlined">trending_flat</span>
+</button>
+</div>
+</div>
+<!-- Subtle Decorative Terminal Element -->
+<div class="absolute bottom-6 right-6 font-label-sm text-primary/30 hidden md:block">
+                    [SYS_AUTH: BLUE_OPS_WAITING]
+                </div>
+</section>
+</div>
+<!-- Central Divider Badge -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col items-center gap-4">
+<div class="w-16 h-16 bg-surface border-2 border-outline-variant flex items-center justify-center rotate-45">
+<span class="material-symbols-outlined text-tertiary -rotate-45 font-bold" style="font-variation-settings: 'wght' 700;">chair</span>
+</div>
+<div class="px-3 py-1 bg-surface-container-highest border border-outline-variant text-[10px] font-label-sm text-on-surface-variant uppercase tracking-widest">
+                VS
+            </div>
+</div>
+</main>
+<!-- Footer Status Bar -->
+<footer class="fixed bottom-0 left-0 w-full h-10 bg-surface-container-lowest border-t border-outline-variant/30 flex items-center justify-between px-margin-desktop z-50">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary animate-pulse shadow-[0_0_8px_rgba(238,194,0,0.6)]"></div>
+<span class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider">Connection Stable</span>
+</div>
+<div class="text-[10px] font-label-sm text-on-surface-variant/40">ENC_TYPE: AES-256-GCM</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="text-[10px] font-label-sm text-on-surface-variant uppercase">Mission Time: 00:04:12</span>
+<span class="text-[10px] font-label-sm text-on-surface-variant uppercase">Location: [REDACTED]</span>
+</div>
+</footer>
+<script>
+        // Micro-interaction: Mouse parallax on sections
+        document.querySelectorAll('section').forEach(section => {
+            section.addEventListener('mousemove', (e) => {
+                const img = section.querySelector('img');
+                const { clientX, clientY } = e;
+                const { innerWidth, innerHeight } = window;
+                const moveX = (clientX - innerWidth / 2) / 50;
+                const moveY = (clientY - innerHeight / 2) / 50;
+                img.style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+            });
+
+            section.addEventListener('mouseleave', () => {
+                const img = section.querySelector('img');
+                img.style.transform = `scale(1) translate(0px, 0px)`;
+            });
+        });
+
+        // Simple Glitch Effect on Hover
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.classList.add('crt-flicker');
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.classList.remove('crt-flicker');
+            });
+        });
+    </script>
+</body></html>

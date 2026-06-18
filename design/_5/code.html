@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>INTEL_CORE: LOGIN</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .hazard-texture {
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(242, 194, 0, 0.05) 10px,
+                rgba(242, 194, 0, 0.05) 20px
+            );
+        }
+
+        .scanline-effect {
+            background: linear-gradient(
+                to bottom,
+                rgba(180, 197, 255, 0) 50%,
+                rgba(180, 197, 255, 0.02) 50%
+            );
+            background-size: 100% 4px;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.8; }
+            5% { opacity: 0.9; }
+            10% { opacity: 0.4; }
+            15% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        .animate-flicker {
+            animation: flicker 4s infinite;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.2em;
+            background-color: currentColor;
+            vertical-align: middle;
+            margin-left: 4px;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#574500",
+                      "tertiary-fixed-dim": "#eec200",
+                      "secondary-container": "#bb0112",
+                      "on-primary": "#002a78",
+                      "on-tertiary-fixed": "#231b00",
+                      "tertiary": "#eec200",
+                      "inverse-primary": "#0053db",
+                      "secondary": "#ffb4ab",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "surface-container-low": "#131b2e",
+                      "tertiary-fixed": "#ffe083",
+                      "tertiary-container": "#cea700",
+                      "on-background": "#dae2fd",
+                      "outline": "#8d90a0",
+                      "on-secondary-fixed-variant": "#93000b",
+                      "on-primary-container": "#eeefff",
+                      "surface-container-high": "#222a3d",
+                      "on-error": "#690005",
+                      "primary": "#b4c5ff",
+                      "on-tertiary-container": "#4e3d00",
+                      "primary-fixed": "#dbe1ff",
+                      "surface-container-highest": "#2d3449",
+                      "surface-bright": "#31394d",
+                      "surface-container": "#171f33",
+                      "on-secondary-container": "#ffc8c1",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "background": "#0b1326",
+                      "surface-dim": "#0b1326",
+                      "error": "#ffb4ab",
+                      "on-secondary-fixed": "#410002",
+                      "inverse-surface": "#dae2fd",
+                      "on-secondary": "#690005",
+                      "secondary-fixed-dim": "#ffb4ab",
+                      "on-surface": "#dae2fd",
+                      "surface-container-lowest": "#060e20",
+                      "on-surface-variant": "#c3c6d7",
+                      "inverse-on-surface": "#283044",
+                      "primary-container": "#2563eb",
+                      "surface-tint": "#b4c5ff",
+                      "outline-variant": "#434655",
+                      "surface": "#0b1326",
+                      "on-tertiary": "#3c2f00",
+                      "secondary-fixed": "#ffdad6",
+                      "on-primary-fixed": "#00174b",
+                      "error-container": "#93000a",
+                      "on-error-container": "#ffdad6",
+                      "surface-variant": "#2d3449"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "gutter": "16px",
+                      "margin-desktop": "40px",
+                      "base": "4px",
+                      "card-gap": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["JetBrains Mono"],
+                      "display-lg": ["JetBrains Mono"],
+                      "headline-lg": ["JetBrains Mono"],
+                      "label-sm": ["JetBrains Mono"],
+                      "body-md": ["Inter"],
+                      "label-md": ["JetBrains Mono"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                      "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                      "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                      "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                      "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                      "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                      "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "500" }]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary selection:text-on-primary min-h-screen overflow-x-hidden flex flex-col font-body-md">
+<!-- TopAppBar Fragment - Note: Navigation suppressed for login context -->
+<header class="bg-surface dark:bg-surface border-b border-outline-variant docked full-width top-0 z-50 flex justify-between items-center px-margin-desktop w-full h-20">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-3xl animate-pulse" data-icon="security">security</span>
+<h1 class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary dark:text-primary uppercase">
+                INTEL_CORE: CODENAMES
+            </h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-2 items-center">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-flicker"></span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">System Online</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-all duration-200" data-icon="terminal">terminal</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-all duration-200" data-icon="settings">settings</span>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center relative p-margin-mobile md:p-0">
+<!-- Background Asset: WebGL Shader Placeholder -->
+
+<!-- Texture Overlays -->
+<div class="absolute inset-0 scanline-effect pointer-events-none"></div>
+<div class="absolute inset-0 hazard-texture opacity-10 pointer-events-none"></div>
+<!-- Login Card -->
+<div class="relative w-full max-w-md z-10">
+<!-- Decorative Terminal Corners -->
+<div class="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-primary"></div>
+<div class="absolute -top-2 -right-2 w-6 h-6 border-t-2 border-r-2 border-primary"></div>
+<div class="absolute -bottom-2 -left-2 w-6 h-6 border-b-2 border-l-2 border-primary"></div>
+<div class="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-primary"></div>
+<div class="bg-surface-container-high border border-outline-variant p-8 shadow-2xl backdrop-blur-md">
+<div class="mb-8 space-y-2">
+<div class="flex items-center gap-2 text-tertiary">
+<span class="material-symbols-outlined text-sm" data-icon="lock">lock</span>
+<span class="font-label-sm text-label-sm uppercase tracking-[0.2em]">Restricted Sector</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Authentication Required</h2>
+<p class="font-body-md text-on-surface-variant italic opacity-80 border-l-2 border-outline-variant pl-4 py-1">
+                        "The distance between an agent and a ghost is a single failed handshake."
+                    </p>
+</div>
+<form class="space-y-6">
+<div class="space-y-2 group">
+<label class="font-label-md text-label-md text-primary flex justify-between items-center" for="agent-name">
+<span>AGENT_IDENTIFIER</span>
+<span class="text-[10px] opacity-50 uppercase">Input Required</span>
+</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant group-focus-within:text-primary transition-colors" data-icon="person">person</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant py-4 pl-12 pr-4 font-headline-lg-mobile text-headline-lg-mobile text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-outline/40 placeholder:font-headline-lg-mobile" id="agent-name" placeholder="Enter Codename..." type="text"/>
+</div>
+</div>
+<div class="space-y-4 pt-4">
+<button class="w-full group relative overflow-hidden bg-primary-container text-on-primary-container font-headline-lg-mobile text-headline-lg-mobile py-4 uppercase tracking-tighter hover:bg-primary-fixed transition-all active:scale-[0.98] duration-100" type="submit">
+<!-- Button Hover Effect -->
+<div class="absolute inset-0 w-1/4 h-full bg-white/20 -skew-x-12 -translate-x-full group-hover:translate-x-[400%] transition-transform duration-700 ease-in-out"></div>
+<span class="relative z-10 flex items-center justify-center gap-3">
+                                Join Mission
+                                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</span>
+</button>
+<div class="text-center">
+<span class="font-label-sm text-label-sm text-error uppercase tracking-widest animate-flicker">
+                                Classified Access Only
+                            </span>
+</div>
+</div>
+</form>
+<div class="mt-12 pt-8 border-t border-outline-variant/30 flex flex-col gap-4">
+<div class="flex justify-between items-center text-[10px] font-label-md text-outline uppercase">
+<span>Status: STANDBY</span>
+<span>Node: SECTOR_07</span>
+</div>
+<!-- Dossier Look-alike Decoration -->
+<div class="grid grid-cols-4 gap-1 h-1">
+<div class="bg-primary h-full"></div>
+<div class="bg-primary h-full opacity-60"></div>
+<div class="bg-primary h-full opacity-30"></div>
+<div class="bg-outline-variant h-full"></div>
+</div>
+</div>
+</div>
+<!-- Technical Metadata Decoration -->
+<div class="mt-4 flex justify-between items-start opacity-40">
+<div class="font-label-sm text-[10px] space-y-1">
+<p>VER: 2.0.4-BETA</p>
+<p>UUID: FF-882-0192</p>
+</div>
+<div class="font-label-sm text-[10px] text-right">
+<p>INTEL_CORE_NET</p>
+<p>© 1984 RECON_OPS</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Stats / Atmospheric Info -->
+<footer class="h-12 border-t border-outline-variant bg-surface-container-lowest px-margin-desktop flex items-center justify-between font-label-sm text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">
+<div class="flex gap-8">
+<span class="flex items-center gap-2"><span class="w-1 h-1 bg-primary rounded-full"></span> Active Sessions: 1,204</span>
+<span class="flex items-center gap-2"><span class="w-1 h-1 bg-tertiary rounded-full"></span> Ping: 12ms</span>
+</div>
+<div class="flex gap-4">
+<a class="hover:text-primary transition-colors" href="#">Privacy_Dossier</a>
+<span class="text-outline-variant">/</span>
+<a class="hover:text-primary transition-colors" href="#">Op_Terms</a>
+</div>
+</footer>
+<script>
+        // Micro-interaction for input field to simulate terminal typing if desired
+        const input = document.getElementById('agent-name');
+        input.addEventListener('focus', () => {
+            console.log('Terminal Handshake Initiated...');
+        });
+
+        // Background subtle flicker logic
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            // CSS variable for dynamic lighting if needed
+            document.documentElement.style.setProperty('--mouse-x', x);
+            document.documentElement.style.setProperty('--mouse-y', y);
+        });
+    </script>
+</body></html>

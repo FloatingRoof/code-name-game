@@ -1,0 +1,27 @@
+{
+  "name": "codenames",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w @codenames/server",
+    "dev:client": "npm run dev -w @codenames/client",
+    "build": "npm run build -w @codenames/shared && npm run build -w @codenames/server && npm run build -w @codenames/client",
+    "test": "npm run test -w @codenames/shared && npm run test -w @codenames/server && npm run test -w @codenames/client",
+    "typecheck": "npm run typecheck -w @codenames/shared && npm run typecheck -w @codenames/server && npm run typecheck -w @codenames/client",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^10.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.4",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.61.1"
+  }
+}

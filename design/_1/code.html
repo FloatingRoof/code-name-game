@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#574500",
+                    "tertiary-fixed-dim": "#eec200",
+                    "secondary-container": "#bb0112",
+                    "on-primary": "#002a78",
+                    "on-tertiary-fixed": "#231b00",
+                    "tertiary": "#eec200",
+                    "inverse-primary": "#0053db",
+                    "secondary": "#ffb4ab",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "surface-container-low": "#131b2e",
+                    "tertiary-fixed": "#ffe083",
+                    "tertiary-container": "#cea700",
+                    "on-background": "#dae2fd",
+                    "outline": "#8d90a0",
+                    "on-secondary-fixed-variant": "#93000b",
+                    "on-primary-container": "#eeefff",
+                    "surface-container-high": "#222a3d",
+                    "on-error": "#690005",
+                    "primary": "#b4c5ff",
+                    "on-tertiary-container": "#4e3d00",
+                    "primary-fixed": "#dbe1ff",
+                    "surface-container-highest": "#2d3449",
+                    "surface-bright": "#31394d",
+                    "surface-container": "#171f33",
+                    "on-secondary-container": "#ffc8c1",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "background": "#0b1326",
+                    "surface-dim": "#0b1326",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed": "#410002",
+                    "inverse-surface": "#dae2fd",
+                    "on-secondary": "#690005",
+                    "secondary-fixed-dim": "#ffb4ab",
+                    "on-surface": "#dae2fd",
+                    "surface-container-lowest": "#060e20",
+                    "on-surface-variant": "#c3c6d7",
+                    "inverse-on-surface": "#283044",
+                    "primary-container": "#2563eb",
+                    "surface-tint": "#b4c5ff",
+                    "outline-variant": "#434655",
+                    "surface": "#0b1326",
+                    "on-tertiary": "#3c2f00",
+                    "secondary-fixed": "#ffdad6",
+                    "on-primary-fixed": "#00174b",
+                    "error-container": "#93000a",
+                    "on-error-container": "#ffdad6",
+                    "surface-variant": "#2d3449"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "margin-desktop": "40px",
+                    "base": "4px",
+                    "card-gap": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["JetBrains Mono"],
+                    "display-lg": ["JetBrains Mono"],
+                    "headline-lg": ["JetBrains Mono"],
+                    "label-sm": ["JetBrains Mono"],
+                    "body-md": ["Inter"],
+                    "label-md": ["JetBrains Mono"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow-x: hidden;
+        }
+        .grain-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        .scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(180, 197, 255, 0.02) 50%);
+            background-size: 100% 4px;
+        }
+        .card-hazard {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(250, 204, 21, 0.05) 10px, rgba(250, 204, 21, 0.05) 20px);
+        }
+        .pulse-red {
+            animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-red {
+            0%, 100% { border-color: #bb0112; box-shadow: 0 0 0 0 rgba(187, 1, 18, 0.4); }
+            50% { border-color: #ffb4ab; box-shadow: 0 0 15px 2px rgba(187, 1, 18, 0.2); }
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background">
+<!-- Header / TopAppBar -->
+<header class="fixed top-0 z-50 w-full h-20 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop">
+<div class="flex items-center gap-8">
+<h1 class="font-headline-lg text-headline-lg font-extrabold tracking-tighter text-primary uppercase">
+                INTEL_CORE: CODENAMES
+            </h1>
+<nav class="hidden md:flex gap-6">
+<a class="font-label-md text-label-md text-tertiary border-b-2 border-tertiary pb-1 transition-all duration-200" href="#">Dossier</a>
+<a class="font-label-md text-label-md text-on-surface-variant font-medium hover:text-primary transition-all duration-200" href="#">Field Map</a>
+<a class="font-label-md text-label-md text-on-surface-variant font-medium hover:text-primary transition-all duration-200" href="#">Comms</a>
+<a class="font-label-md text-label-md text-on-surface-variant font-medium hover:text-primary transition-all duration-200" href="#">Archives</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer active:scale-95 duration-100" data-icon="terminal">terminal</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer active:scale-95 duration-100" data-icon="settings">settings</span>
+<div class="w-10 h-10 rounded-full border-2 border-primary bg-surface-container overflow-hidden">
+<img alt="Agent Profile" data-alt="A gritty, cinematic portrait of a professional intelligence officer in low-light conditions. He is wearing a dark tactical turtleneck and has a focused, intense expression. The lighting is cold and atmospheric, with subtle blue rim lighting highlighting his silhouette against a dark, industrial background. The style is hyper-realistic with high contrast and sharp details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0T3y1KGnIjgZz4gLl_N3QyP8qaeaSR4FDS6zvFivsLQN7vkakj9hrbp8HhlFCkXgeAuLVXOT_6cDoKUT8dl3aT6gfpFVATRJPH3N2zjGses--0924Y-SepzcrxoA_AxUhDMkr_FbLJwR6n9QdDgAOWfFBz2s7wzmYkUbZ9EfGpFzWGRDuQC_GhiyUUtayzBogdz9E5z3kkQfIUw3PHtltQWdr_H0SXpWhzClZgQ4x68J2VMdvyuIdBoQerPrJCMo1Ay0TENcXINg"/>
+</div>
+</div>
+</header>
+<!-- Sidebar / SideNavBar -->
+<aside class="fixed left-0 top-20 w-72 h-[calc(100vh-80px)] bg-surface-container-low border-r border-outline-variant flex flex-col py-4 gap-2 z-40">
+<div class="px-6 mb-6">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-[18px]" data-icon="radar">radar</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg text-primary text-sm font-bold uppercase leading-tight">SECTOR_07</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Active Mission</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1 px-3">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container bg-primary-container font-bold border-l-4 border-tertiary transition-transform active:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="radar">radar</span>
+<span class="font-label-md text-label-md">Live Intel</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-md text-label-md">Red Ops</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+<span class="font-label-md text-label-md">Blue Ops</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pb-4 flex flex-col gap-4">
+<button class="w-full py-4 bg-tertiary text-on-tertiary font-bold tracking-widest text-xs uppercase border border-tertiary hover:bg-tertiary-container transition-all active:scale-95">
+                TRANSMIT CLUE
+            </button>
+<div class="pt-4 border-t border-outline-variant flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant text-sm hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant text-sm hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+<span class="font-label-sm text-label-sm">Disconnect</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-72 mt-20 p-8 min-h-[calc(100vh-80px)] relative overflow-hidden">
+<div class="scanline absolute inset-0 pointer-events-none z-10 opacity-30"></div>
+<!-- Game Header / Turn Indicator -->
+<div class="max-w-5xl mx-auto mb-8 flex flex-col items-center gap-6 relative z-20">
+<div class="flex w-full justify-between items-end">
+<!-- Red Team Dossier -->
+<div class="flex flex-col gap-2 p-4 border border-secondary-container bg-surface-container-high w-64 rounded-lg relative overflow-hidden pulse-red">
+<div class="grain-texture absolute inset-0"></div>
+<div class="flex justify-between items-center mb-1">
+<span class="font-headline-lg text-lg text-secondary uppercase font-bold tracking-tight">RED TEAM</span>
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant">AGENTS REMAINING</p>
+<p class="font-display-lg text-2xl text-secondary">09</p>
+</div>
+<div class="w-full bg-background h-2 rounded-full mt-2 overflow-hidden border border-outline-variant">
+<div class="bg-secondary h-full" style="width: 10%"></div>
+</div>
+</div>
+<!-- Center Turn Status -->
+<div class="text-center flex flex-col items-center gap-2">
+<div class="flex items-center gap-2 px-6 py-2 bg-secondary-container text-on-secondary-container rounded-full border border-secondary font-bold text-xs tracking-widest uppercase">
+<span class="material-symbols-outlined text-[16px] animate-spin" data-icon="autorenew">autorenew</span>
+                        RED CAPTAIN IS GIVING A CLUE
+                    </div>
+<p class="font-label-sm text-label-sm text-on-surface-variant tracking-tighter opacity-70">AWAITING CLUE TRANSMISSION FROM COMMAND</p>
+</div>
+<!-- Blue Team Dossier -->
+<div class="flex flex-col gap-2 p-4 border border-primary-container bg-surface-container-high w-64 rounded-lg relative overflow-hidden grayscale">
+<div class="grain-texture absolute inset-0"></div>
+<div class="flex justify-between items-center mb-1">
+<span class="font-headline-lg text-lg text-primary uppercase font-bold tracking-tight">BLUE TEAM</span>
+</div>
+<div class="flex justify-between items-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant">AGENTS REMAINING</p>
+<p class="font-display-lg text-2xl text-primary">08</p>
+</div>
+<div class="w-full bg-background h-2 rounded-full mt-2 overflow-hidden border border-outline-variant">
+<div class="bg-primary h-full" style="width: 20%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 5x5 Card Grid -->
+<div class="max-w-5xl mx-auto grid grid-cols-5 gap-card-gap relative z-20">
+<!-- Cards will be generated based on Captain's View (Revealed Colors) -->
+<!-- Row 1 -->
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<div class="absolute top-1 left-1 font-label-sm text-[8px] text-secondary/50">SEC_RED_01</div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">CAIRO</span>
+</div>
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<div class="absolute top-1 left-1 font-label-sm text-[8px] text-primary/50">SEC_BLU_01</div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">PIANO</span>
+</div>
+<div class="aspect-video bg-surface-variant border-2 border-outline-variant p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-on-surface-variant uppercase text-center relative z-10 group-hover:scale-110 transition-transform">WELL</span>
+</div>
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">BRIDGE</span>
+</div>
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">CHAIR</span>
+</div>
+<!-- Row 2 -->
+<div class="aspect-video bg-surface-variant border-2 border-outline-variant p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-on-surface-variant uppercase text-center relative z-10 group-hover:scale-110 transition-transform">DRAFT</span>
+</div>
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">EMBASSY</span>
+</div>
+<div class="aspect-video bg-surface-container-lowest border-4 border-tertiary card-hazard p-4 flex items-center justify-center relative overflow-hidden group cursor-default shadow-[0_0_20px_rgba(238,194,0,0.15)]">
+<div class="grain-texture absolute inset-0"></div>
+<div class="absolute top-1 left-1"><span class="material-symbols-outlined text-tertiary text-xs" data-icon="skull">skull</span></div>
+<span class="font-headline-lg text-lg text-tertiary uppercase text-center relative z-10 group-hover:scale-110 transition-transform font-bold">ASSASSIN</span>
+<div class="absolute bottom-1 right-1"><span class="material-symbols-outlined text-tertiary text-xs" data-icon="warning">warning</span></div>
+</div>
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">FIELD</span>
+</div>
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">ORANGE</span>
+</div>
+<!-- Row 3 -->
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">KNIGHT</span>
+</div>
+<div class="aspect-video bg-surface-variant border-2 border-outline-variant p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-on-surface-variant uppercase text-center relative z-10 group-hover:scale-110 transition-transform">SQUARE</span>
+</div>
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">MERCURY</span>
+</div>
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">PENGUIN</span>
+</div>
+<div class="aspect-video bg-surface-variant border-2 border-outline-variant p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-on-surface-variant uppercase text-center relative z-10 group-hover:scale-110 transition-transform">OPERA</span>
+</div>
+<!-- Row 4 -->
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">TOWER</span>
+</div>
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">SHAKESPEARE</span>
+</div>
+<div class="aspect-video bg-surface-variant border-2 border-outline-variant p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-on-surface-variant uppercase text-center relative z-10 group-hover:scale-110 transition-transform">BLOCK</span>
+</div>
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">CLIFF</span>
+</div>
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">SINK</span>
+</div>
+<!-- Row 5 -->
+<div class="aspect-video bg-surface-variant border-2 border-outline-variant p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-on-surface-variant uppercase text-center relative z-10 group-hover:scale-110 transition-transform">MINT</span>
+</div>
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">WHALE</span>
+</div>
+<div class="aspect-video bg-secondary-container/30 border-2 border-secondary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-secondary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">PARACHUTE</span>
+</div>
+<div class="aspect-video bg-primary-container/30 border-2 border-primary p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-primary uppercase text-center relative z-10 group-hover:scale-110 transition-transform">JACK</span>
+</div>
+<div class="aspect-video bg-surface-variant border-2 border-outline-variant p-4 flex items-center justify-center relative overflow-hidden group cursor-default">
+<div class="grain-texture absolute inset-0"></div>
+<span class="font-headline-lg text-lg text-on-surface-variant uppercase text-center relative z-10 group-hover:scale-110 transition-transform">ROOT</span>
+</div>
+</div>
+<!-- Clue Input Overlay (Captain's View Exclusive) -->
+<div class="fixed bottom-10 left-[calc(18rem+2.5rem)] right-10 flex justify-center items-center z-30">
+<div class="bg-surface-container-highest/90 backdrop-blur-xl border border-outline-variant p-4 w-full max-w-4xl shadow-2xl flex items-center gap-6 rounded-xl">
+<div class="flex-1 flex flex-col gap-1">
+<label class="font-label-sm text-[10px] text-primary uppercase tracking-widest pl-1">ENTER TRANSMISSION CLUE</label>
+<div class="flex items-center gap-4 bg-background border border-outline p-3 focus-within:border-primary transition-colors rounded">
+<span class="material-symbols-outlined text-outline" data-icon="terminal">terminal</span>
+<input class="bg-transparent border-none outline-none text-primary font-headline-lg text-xl w-full placeholder:text-surface-variant placeholder:font-normal uppercase focus:ring-0" placeholder="TYPE SINGLE WORD..." type="text"/>
+</div>
+</div>
+<div class="w-32 flex flex-col gap-1">
+<label class="font-label-sm text-[10px] text-primary uppercase tracking-widest pl-1">COUNT</label>
+<select class="bg-background border border-outline text-primary font-headline-lg p-3 w-full rounded focus:ring-primary focus:border-primary appearance-none">
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>4</option>
+<option>5</option>
+<option>0</option>
+<option>∞</option>
+</select>
+</div>
+<button class="h-full bg-primary text-on-primary font-bold px-10 py-4 flex flex-col items-center justify-center group hover:bg-white transition-colors rounded active:scale-95 duration-100 mt-5 self-end">
+<span class="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform" data-icon="send">send</span>
+<span class="font-label-sm text-[10px] mt-1">TRANSMIT</span>
+</button>
+</div>
+</div>
+<!-- Log Activity Feed (Floating Mini) -->
+<div class="fixed bottom-32 right-10 w-64 bg-surface-container/80 backdrop-blur-md border border-outline-variant p-3 z-20 hidden xl:block">
+<p class="font-label-sm text-[10px] text-outline uppercase mb-2 border-b border-outline-variant pb-1">Operational Logs</p>
+<div class="flex flex-col gap-2 max-h-32 overflow-y-auto">
+<p class="text-[10px] font-mono leading-tight"><span class="text-secondary">[14:02]</span> Red Op: Cairo revealed.</p>
+<p class="text-[10px] font-mono leading-tight"><span class="text-primary">[14:05]</span> Blue Op: Whale revealed.</p>
+<p class="text-[10px] font-mono leading-tight"><span class="text-on-surface-variant">[14:06]</span> Bystander: Opera revealed.</p>
+<p class="text-[10px] font-mono leading-tight animate-pulse"><span class="text-tertiary">&gt;&gt;</span> Waiting for Clue...</p>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for input focus
+        const transmissionInput = document.querySelector('input');
+        const transmissionStatus = document.querySelector('.tracking-tighter');
+        
+        transmissionInput.addEventListener('input', (e) => {
+            if (e.target.value.length > 0) {
+                transmissionStatus.innerText = "PREPARING ENCRYPTED PAYLOAD: " + e.target.value.toUpperCase();
+                transmissionStatus.classList.add('text-primary');
+                transmissionStatus.classList.remove('opacity-70');
+            } else {
+                transmissionStatus.innerText = "AWAITING CLUE TRANSMISSION FROM COMMAND";
+                transmissionStatus.classList.remove('text-primary');
+                transmissionStatus.classList.add('opacity-70');
+            }
+        });
+
+        // Atmospheric effect: Subtle flickering of 'online' dots
+        setInterval(() => {
+            const led = document.querySelector('.animate-pulse');
+            if (led) led.style.opacity = Math.random() > 0.1 ? '1' : '0.5';
+        }, 150);
+    </script>
+</body></html>
