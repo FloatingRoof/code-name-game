@@ -12,4 +12,9 @@ export const config = {
   clientOrigin: process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
   minPlayersPerTeam: parsePositiveInt(process.env.MIN_PLAYERS_PER_TEAM, 2, "MIN_PLAYERS_PER_TEAM"),
   defaultRoomCode: process.env.DEFAULT_ROOM_CODE ?? "MAIN",
+  disconnectRemovalMs: parsePositiveInt(
+    process.env.DISCONNECT_REMOVAL_MS,
+    15_000,
+    "DISCONNECT_REMOVAL_MS",
+  ),
 };

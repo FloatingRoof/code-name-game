@@ -42,14 +42,14 @@ function makeState(phase: GameState["phase"] = "in_progress"): GameState {
 
 describe("toPublicState", () => {
   it("reveals all colors to the captain", () => {
-    const pub = toPublicState(makeState(), "cap");
+    const pub = toPublicState(makeState(), "cap", 2);
     expect(pub.viewerRole).toBe("captain");
     expect(pub.cards.find((c) => c.id === 0)?.color).toBe("red");
     expect(pub.cards.find((c) => c.id === 1)?.color).toBe("assassin");
   });
 
   it("hides unrevealed colors from an operative, but shows revealed ones", () => {
-    const pub = toPublicState(makeState(), "op");
+    const pub = toPublicState(makeState(), "op", 2);
     expect(pub.viewerRole).toBe("operative");
     expect(pub.cards.find((c) => c.id === 0)?.color).toBeNull();
     expect(pub.cards.find((c) => c.id === 1)?.color).toBeNull();
@@ -57,20 +57,25 @@ describe("toPublicState", () => {
   });
 
   it("hides unrevealed colors from a spectator just like an operative", () => {
-    const pub = toPublicState(makeState(), "spec");
+    const pub = toPublicState(makeState(), "spec", 2);
     expect(pub.viewerRole).toBe("spectator");
     expect(pub.cards.find((c) => c.id === 0)?.color).toBeNull();
   });
 
   it("reveals all colors to everyone once the game is finished", () => {
-    const pub = toPublicState(makeState("finished"), "op");
+    const pub = toPublicState(makeState("finished"), "op", 2);
     expect(pub.cards.find((c) => c.id === 0)?.color).toBe("red");
     expect(pub.cards.find((c) => c.id === 1)?.color).toBe("assassin");
   });
 
   it("falls back to spectator visibility for an unknown viewer id", () => {
-    const pub = toPublicState(makeState(), "ghost");
+    const pub = toPublicState(makeState(), "ghost", 2);
     expect(pub.viewerRole).toBe("spectator");
     expect(pub.cards.find((c) => c.id === 0)?.color).toBeNull();
+  });
+
+  it("passes through the configured minPlayersPerTeam", () => {
+    const pub = toPublicState(makeState(), "cap", 3);
+    expect(pub.minPlayersPerTeam).toBe(3);
   });
 });

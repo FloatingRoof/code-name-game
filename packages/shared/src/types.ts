@@ -66,4 +66,6 @@ export interface PublicGameState {
   winner: TeamColor | null;
   winReason: WinReason;
   viewerRole: PlayerRole;
+  /** Server's configured minimum connected, ready players per team to start a game. */
+  minPlayersPerTeam: number;
 }

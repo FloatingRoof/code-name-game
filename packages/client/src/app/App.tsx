@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { JoinGameAck } from "@codenames/shared";
+import { LobbyPage } from "../pages/lobby";
 import { NameEntryPage } from "../pages/name-entry";
 import { TeamSelectPage } from "../pages/team-select";
 import { ThemeToggle, useTheme } from "../shared/theme";
@@ -23,6 +24,8 @@ function AppContent() {
         <NameEntryPage onJoined={setSession} />
       ) : needsTeam && gameState ? (
         <TeamSelectPage myPlayerId={session.playerId} />
+      ) : gameState?.phase === "lobby" ? (
+        <LobbyPage myPlayerId={session.playerId} />
       ) : (
         <main>
           <p>

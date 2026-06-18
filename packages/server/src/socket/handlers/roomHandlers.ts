@@ -4,7 +4,9 @@ import {
   type JoinGameAck,
   type JoinGamePayload,
 } from "@codenames/shared";
+import { config } from "../../config.js";
 import { ensureDefaultRoom } from "../../domain/defaultRoom.js";
+import type { Room } from "../../domain/Room.js";
 import type { AckCallback } from "../types.js";
 import {
   broadcastRoomState,
@@ -14,6 +16,13 @@ import {
   type AppServer,
   type AppSocket,
 } from "../context.js";
+
+/** After a disconnect, gives the player `config.disconnectRemovalMs` to reconnect before dropping them. */
+function scheduleDisconnectRemoval(io: AppServer, room: Room, playerId: string): void {
+  room.scheduleRemovalIfStillDisconnected(playerId, config.disconnectRemovalMs, () => {
+    broadcastRoomState(io, room);
+  });
+}
 
 export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
   socket.on(ClientEvent.JoinGame, (payload: JoinGamePayload, ack: AckCallback<JoinGameAck>) => {
@@ -60,7 +69,9 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
     const room = getRoomForSocket(socket);
     const playerId = socket.data.playerId;
     if (room && playerId) {
-      room.disconnectSocket(playerId, socket.id);
+      if (room.disconnectSocket(playerId, socket.id)) {
+        scheduleDisconnectRemoval(io, room, playerId);
+      }
       socket.to(room.state.roomCode).emit(ServerEvent.PlayerLeft, { playerId });
       broadcastRoomState(io, room);
       void socket.leave(room.state.roomCode);
@@ -74,7 +85,9 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
     const room = getRoomForSocket(socket);
     const playerId = socket.data.playerId;
     if (room && playerId) {
-      room.disconnectSocket(playerId, socket.id);
+      if (room.disconnectSocket(playerId, socket.id)) {
+        scheduleDisconnectRemoval(io, room, playerId);
+      }
       broadcastRoomState(io, room);
     }
   });

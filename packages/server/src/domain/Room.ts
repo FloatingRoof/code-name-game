@@ -35,6 +35,8 @@ export class Room {
   state: GameState;
   /** playerId -> current socket id, used for reconnection and targeted emits. */
   playerSockets: Map<string, string> = new Map();
+  /** playerId -> pending removal timer, started on disconnect and cancelled on reconnect. */
+  private removalTimers: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(roomCode: string) {
     this.state = {
@@ -76,6 +78,7 @@ export class Room {
     if (existing) {
       existing.connected = true;
       existing.name = params.name;
+      this.cancelScheduledRemoval(existing.id);
       return ok(existing);
     }
     const player: Player = {
@@ -105,10 +108,47 @@ export class Room {
    * reconnected on a new socket (e.g. a page refresh) and clobbering the new,
    * live session.
    */
-  disconnectSocket(playerId: string, socketId: string): void {
-    if (this.playerSockets.get(playerId) !== socketId) return;
+  disconnectSocket(playerId: string, socketId: string): boolean {
+    if (this.playerSockets.get(playerId) !== socketId) return false;
     this.markDisconnected(playerId);
     this.playerSockets.delete(playerId);
+    return true;
+  }
+
+  /**
+   * Schedules `playerId` for removal after `delayMs` if they're still disconnected
+   * by then. Reconnecting via `join()` cancels the pending timer. Calling this again
+   * for the same player (e.g. a second disconnect) replaces the previous timer.
+   */
+  scheduleRemovalIfStillDisconnected(
+    playerId: string,
+    delayMs: number,
+    onRemoved: () => void,
+  ): void {
+    this.cancelScheduledRemoval(playerId);
+    const timer = setTimeout(() => {
+      this.removalTimers.delete(playerId);
+      const player = this.findPlayer(playerId);
+      if (player && !player.connected) {
+        this.removePlayer(playerId);
+        onRemoved();
+      }
+    }, delayMs);
+    this.removalTimers.set(playerId, timer);
+  }
+
+  cancelScheduledRemoval(playerId: string): void {
+    const timer = this.removalTimers.get(playerId);
+    if (timer) {
+      clearTimeout(timer);
+      this.removalTimers.delete(playerId);
+    }
+  }
+
+  removePlayer(playerId: string): void {
+    this.state.players = this.state.players.filter((p) => p.id !== playerId);
+    this.playerSockets.delete(playerId);
+    this.touch();
   }
 
   setTeam(playerId: string, team: TeamColor): Result<void> {

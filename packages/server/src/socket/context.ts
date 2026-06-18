@@ -1,5 +1,6 @@
 import type { Server, Socket } from "socket.io";
 import { ServerEvent, type ErrorCode } from "@codenames/shared";
+import { config } from "../config.js";
 import type { Room } from "../domain/Room.js";
 import { getRoom } from "../domain/store.js";
 import type { Result } from "../domain/result.js";
@@ -76,6 +77,9 @@ export function broadcastRoomState(io: AppServer, room: Room): void {
   for (const player of room.state.players) {
     const socketId = room.playerSockets.get(player.id);
     if (!socketId) continue;
-    io.to(socketId).emit(ServerEvent.GameStateUpdate, toPublicState(room.state, player.id));
+    io.to(socketId).emit(
+      ServerEvent.GameStateUpdate,
+      toPublicState(room.state, player.id, config.minPlayersPerTeam),
+    );
   }
 }

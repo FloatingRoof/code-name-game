@@ -41,6 +41,7 @@ function buildGameState(): PublicGameState {
     winner: null,
     winReason: null,
     viewerRole: "operative",
+    minPlayersPerTeam: 2,
   };
 }
 

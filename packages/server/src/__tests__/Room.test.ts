@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Room } from "../domain/Room.js";
 
 describe("Room lobby flow", () => {
@@ -330,5 +330,70 @@ describe("Room gameplay flow", () => {
     expect(room.state.phase).toBe("finished");
     expect(room.state.winReason).toBe("assassin_revealed");
     expect(room.state.winner).not.toBe(activeTeam);
+  });
+});
+
+describe("Room disconnect removal", () => {
+  let room: Room;
+
+  beforeEach(() => {
+    room = new Room("TEST");
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("removes a player who stays disconnected past the grace period", () => {
+    const joined = room.join({ name: "Alice" });
+    if (!joined.ok) throw new Error("unreachable");
+    const playerId = joined.data.id;
+    room.playerSockets.set(playerId, "socket-1");
+
+    room.disconnectSocket(playerId, "socket-1");
+    const onRemoved = vi.fn();
+    room.scheduleRemovalIfStillDisconnected(playerId, 15_000, onRemoved);
+
+    vi.advanceTimersByTime(15_000);
+
+    expect(room.findPlayer(playerId)).toBeUndefined();
+    expect(onRemoved).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels the pending removal when the player reconnects in time", () => {
+    const joined = room.join({ name: "Alice" });
+    if (!joined.ok) throw new Error("unreachable");
+    const playerId = joined.data.id;
+    room.playerSockets.set(playerId, "socket-1");
+
+    room.disconnectSocket(playerId, "socket-1");
+    const onRemoved = vi.fn();
+    room.scheduleRemovalIfStillDisconnected(playerId, 15_000, onRemoved);
+
+    vi.advanceTimersByTime(5_000);
+    room.join({ name: "Alice", playerId });
+
+    vi.advanceTimersByTime(15_000);
+
+    expect(room.findPlayer(playerId)).toBeDefined();
+    expect(room.findPlayer(playerId)?.connected).toBe(true);
+    expect(onRemoved).not.toHaveBeenCalled();
+  });
+
+  it("does not remove a player who reconnected before the timer fires, even without cancellation", () => {
+    const joined = room.join({ name: "Alice" });
+    if (!joined.ok) throw new Error("unreachable");
+    const playerId = joined.data.id;
+
+    room.markDisconnected(playerId);
+    const onRemoved = vi.fn();
+    room.scheduleRemovalIfStillDisconnected(playerId, 15_000, onRemoved);
+    room.findPlayer(playerId)!.connected = true;
+
+    vi.advanceTimersByTime(15_000);
+
+    expect(room.findPlayer(playerId)).toBeDefined();
+    expect(onRemoved).not.toHaveBeenCalled();
   });
 });

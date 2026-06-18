@@ -6,7 +6,11 @@ import type { GameState, PublicCard, PublicGameState } from "@codenames/shared";
  * the single point that must always sit between raw GameState and any socket
  * payload — never serialize `state.cards` directly onto the wire.
  */
-export function toPublicState(state: GameState, viewerPlayerId: string): PublicGameState {
+export function toPublicState(
+  state: GameState,
+  viewerPlayerId: string,
+  minPlayersPerTeam: number,
+): PublicGameState {
   const viewer = state.players.find((p) => p.id === viewerPlayerId);
   const viewerRole = viewer?.role ?? "spectator";
   const revealAllColors = state.phase === "finished" || viewerRole === "captain";
@@ -29,5 +33,6 @@ export function toPublicState(state: GameState, viewerPlayerId: string): PublicG
     winner: state.winner,
     winReason: state.winReason,
     viewerRole,
+    minPlayersPerTeam,
   };
 }
