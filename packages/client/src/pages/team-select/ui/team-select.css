@@ -74,13 +74,22 @@
   display: flex;
   width: 100%;
   min-height: 1.5rem;
+  max-height: calc(1.75rem * 5);
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
   font-size: 0.875rem;
   list-style: none;
+}
+
+.team-select__members li {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.125rem 0;
+  text-align: center;
 }
 
 .team-select__join {
