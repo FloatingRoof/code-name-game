@@ -60,6 +60,7 @@ export type ErrorCode =
   | "ROOM_NOT_FOUND"
   | "PLAYER_NOT_FOUND"
   | "INVALID_NAME"
+  | "NAME_TAKEN"
   | "FORBIDDEN_ROLE"
   | "NOT_YOUR_TURN"
   | "NOT_CAPTAIN"

@@ -25,6 +25,52 @@ describe("Room lobby flow", () => {
     expect(room.state.players).toHaveLength(1);
   });
 
+  it("join() rejects a name that is already taken by another player", () => {
+    const first = room.join({ name: "Alice" });
+    expect(first.ok).toBe(true);
+
+    const second = room.join({ name: "Alice" });
+    expect(second.ok).toBe(false);
+    if (second.ok) throw new Error("unreachable");
+    expect(second.code).toBe("NAME_TAKEN");
+    expect(room.state.players).toHaveLength(1);
+  });
+
+  it("join() rejects a name that is already taken, case-insensitively", () => {
+    const first = room.join({ name: "Alice" });
+    expect(first.ok).toBe(true);
+
+    const second = room.join({ name: "ALICE" });
+    expect(second.ok).toBe(false);
+    if (second.ok) throw new Error("unreachable");
+    expect(second.code).toBe("NAME_TAKEN");
+  });
+
+  it("join() allows reusing a name after the original player reconnects with their playerId", () => {
+    const first = room.join({ name: "Alice" });
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error("unreachable");
+
+    const rejoined = room.join({ name: "Alice", playerId: first.data.id });
+    expect(rejoined.ok).toBe(true);
+    expect(room.state.players).toHaveLength(1);
+  });
+
+  it("join() rejects a reconnecting player renaming themselves to another player's name", () => {
+    const first = room.join({ name: "Alice" });
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error("unreachable");
+    const second = room.join({ name: "Bob" });
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error("unreachable");
+
+    const renamed = room.join({ name: "Bob", playerId: first.data.id });
+    expect(renamed.ok).toBe(false);
+    if (renamed.ok) throw new Error("unreachable");
+    expect(renamed.code).toBe("NAME_TAKEN");
+    expect(room.findPlayer(first.data.id)?.name).toBe("Alice");
+  });
+
   it("join() with asSpectator creates a spectator with no team", () => {
     const joined = room.join({ name: "Watcher", asSpectator: true });
     expect(joined.ok).toBe(true);

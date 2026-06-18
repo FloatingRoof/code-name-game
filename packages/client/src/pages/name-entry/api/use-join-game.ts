@@ -1,8 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import type { JoinGameAck, JoinGamePayload } from "@codenames/shared";
-import { socket } from "../../../shared/socket";
+import { socket, useClearSocketError } from "../../../shared/socket";
 
 export function useJoinGame() {
+  const clearSocketError = useClearSocketError();
+
   return useMutation({
     mutationFn: async (payload: JoinGamePayload): Promise<JoinGameAck> => {
       const response = await socket.emitWithAck("join_game", payload);
@@ -11,5 +13,6 @@ export function useJoinGame() {
       }
       return response.data;
     },
+    onSettled: clearSocketError,
   });
 }

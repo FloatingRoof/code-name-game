@@ -82,7 +82,9 @@ Socket.IO and is fully unit-testable in isolation.
 - **`Room.ts`** — the stateful core. Holds `state: GameState` and `playerSockets: Map<playerId,
   socketId>` (used for reconnection and targeted emits). Key methods:
   - `join({ playerId?, name, asSpectator? })` — creates a new player, or reconnects an existing
-    one (matched by `playerId`) and flips `connected: true`.
+    one (matched by `playerId`) and flips `connected: true`. Rejects with `NAME_TAKEN` if another
+    player already has the same name (case-insensitive) — checked against every other player,
+    including on reconnect, so a reconnecting player can't rename themselves into a collision.
   - `markDisconnected(playerId)` — flags a player `connected: false` without removing them.
   - `disconnectSocket(playerId, socketId)` — guarded version of the above: only marks
     disconnected and clears the `playerSockets` entry if `socketId` is still the socket on file
@@ -200,7 +202,7 @@ impossible rather than something that depends on remembering to filter correctly
 
 `PLAYER_NOT_FOUND`, `FORBIDDEN_ROLE`, `INVALID_TEAM`, `CAPTAIN_SLOT_TAKEN`, `CANNOT_START`,
 `GAME_ALREADY_FINISHED`, `NOT_CAPTAIN`, `CLUE_ALREADY_ACTIVE`, `INVALID_CLUE`, `NOT_YOUR_TURN`,
-`NO_ACTIVE_CLUE`, `CARD_NOT_FOUND`, `CARD_ALREADY_REVEALED`, `INVALID_NAME`.
+`NO_ACTIVE_CLUE`, `CARD_NOT_FOUND`, `CARD_ALREADY_REVEALED`, `INVALID_NAME`, `NAME_TAKEN`.
 
 ## Reconnection
 
@@ -225,10 +227,12 @@ All tests run via `npm run test` (root) or per-package `npm run test -w @codenam
 - **`packages/shared/src/__tests__/gameLogic.test.ts`** (21 tests) — `determineStartingTeam`,
   `pickWords`, `buildDeck` (distribution + determinism under a stub RNG), `guessesAllowedForClue`,
   `evaluateWin`, and every `resolveGuess` outcome branch.
-- **`packages/server/src/__tests__/Room.test.ts`** (21 tests) — lobby flow (join/reconnect,
-  spectator restrictions, captain-takeover rules, every `canStart()` rejection reason,
-  `startGame`), gameplay flow (clue validation, reveal validation, a full own-color and
-  opponent-color turn cycle, spectator rejection on every action, assassin instant loss).
+- **`packages/server/src/__tests__/Room.test.ts`** (25 tests) — lobby flow (join/reconnect,
+  duplicate-name rejection on join including when a reconnecting player tries to rename to
+  another player's name, spectator restrictions, captain-takeover rules, every `canStart()`
+  rejection reason, `startGame`), gameplay flow (clue validation, reveal validation, a full
+  own-color and opponent-color turn cycle, spectator rejection on every action, assassin instant
+  loss).
 - **`packages/server/src/__tests__/serializers.test.ts`** (5 tests) — captain sees all colors;
   operative hides unrevealed colors but shows revealed ones; spectator matches operative
   visibility; a finished game reveals everything; an unknown viewer defaults to
@@ -249,5 +253,5 @@ All tests run via `npm run test` (root) or per-package `npm run test -w @codenam
     (team/role intact) on reconnect with the same `playerId`; a teammate can take over an
     abandoned captain slot, and the original captain is demoted to `operative` on reconnect.
 
-Current total: **56 tests** (21 shared unit + 26 server unit + 9 server e2e), all passing,
+Current total: **59 tests** (21 shared unit + 29 server unit + 9 server e2e), all passing,
 alongside clean `lint`, `format:check`, and `typecheck` across both workspaces.

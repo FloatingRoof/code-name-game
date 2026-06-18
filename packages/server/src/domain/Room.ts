@@ -66,13 +66,17 @@ export class Room {
   /** Creates a new player, or reconnects an existing one if `playerId` matches. */
   join(params: JoinParams): Result<Player> {
     this.touch();
-    if (params.playerId) {
-      const existing = this.findPlayer(params.playerId);
-      if (existing) {
-        existing.connected = true;
-        existing.name = params.name;
-        return ok(existing);
-      }
+    const existing = params.playerId ? this.findPlayer(params.playerId) : undefined;
+    const nameTaken = this.state.players.some(
+      (p) => p !== existing && p.name.toLowerCase() === params.name.toLowerCase(),
+    );
+    if (nameTaken) {
+      return err("NAME_TAKEN", "This name is already taken");
+    }
+    if (existing) {
+      existing.connected = true;
+      existing.name = params.name;
+      return ok(existing);
     }
     const player: Player = {
       id: params.playerId ?? randomUUID(),

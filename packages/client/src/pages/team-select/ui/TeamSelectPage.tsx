@@ -1,9 +1,9 @@
-import type { PublicGameState, TeamColor } from "@codenames/shared";
+import type { TeamColor } from "@codenames/shared";
+import { useGameState } from "../../../shared/socket";
 import { useSelectTeam } from "../api/use-select-team";
 import "./team-select.css";
 
 interface TeamSelectPageProps {
-  gameState: PublicGameState;
   myPlayerId: string;
 }
 
@@ -12,8 +12,12 @@ const TEAMS: { color: TeamColor; label: string; icon: string }[] = [
   { color: "blue", label: "Blue", icon: "💧" },
 ];
 
-export function TeamSelectPage({ gameState, myPlayerId }: TeamSelectPageProps) {
+export function TeamSelectPage({ myPlayerId }: TeamSelectPageProps) {
+  const { data: gameState } = useGameState();
   const selectTeam = useSelectTeam();
+
+  if (!gameState) return null;
+
   const myPlayer = gameState.players.find((p) => p.id === myPlayerId);
 
   return (

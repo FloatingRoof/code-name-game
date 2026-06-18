@@ -12,8 +12,14 @@ const selectTeamState = {
   error: null as Error | null,
 };
 
+let gameState: PublicGameState;
+
 vi.mock("../api/use-select-team", () => ({
   useSelectTeam: () => selectTeamState,
+}));
+
+vi.mock("../../../shared/socket", () => ({
+  useGameState: () => ({ data: gameState }),
 }));
 
 function buildGameState(): PublicGameState {
@@ -44,10 +50,11 @@ describe("TeamSelectPage", () => {
     selectTeamState.isPending = false;
     selectTeamState.isError = false;
     selectTeamState.error = null;
+    gameState = buildGameState();
   });
 
   it("lists current members of each team", () => {
-    render(<TeamSelectPage gameState={buildGameState()} myPlayerId="p1" />);
+    render(<TeamSelectPage myPlayerId="p1" />);
 
     expect(screen.getByText("Bob")).toBeInTheDocument();
     expect(screen.getByText("Carol")).toBeInTheDocument();
@@ -55,16 +62,15 @@ describe("TeamSelectPage", () => {
 
   it("submits a team selection", async () => {
     const user = userEvent.setup();
-    render(<TeamSelectPage gameState={buildGameState()} myPlayerId="p1" />);
+    render(<TeamSelectPage myPlayerId="p1" />);
 
     await user.click(screen.getByRole("button", { name: "Join Red" }));
     expect(mutate).toHaveBeenCalledWith({ team: "red" });
   });
 
   it("disables the button for the team the player already joined", () => {
-    const state = buildGameState();
-    state.players[0].team = "red";
-    render(<TeamSelectPage gameState={state} myPlayerId="p1" />);
+    gameState.players[0].team = "red";
+    render(<TeamSelectPage myPlayerId="p1" />);
 
     expect(screen.getByRole("button", { name: "Joined" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Join Blue" })).toBeEnabled();
@@ -73,8 +79,15 @@ describe("TeamSelectPage", () => {
   it("shows the mutation error message", () => {
     selectTeamState.isError = true;
     selectTeamState.error = new Error("Spectators cannot select a team");
-    render(<TeamSelectPage gameState={buildGameState()} myPlayerId="p1" />);
+    render(<TeamSelectPage myPlayerId="p1" />);
 
     expect(screen.getByText("Spectators cannot select a team")).toBeInTheDocument();
+  });
+
+  it("renders nothing while game state hasn't loaded yet", () => {
+    gameState = undefined as unknown as PublicGameState;
+    const { container } = render(<TeamSelectPage myPlayerId="p1" />);
+
+    expect(container).toBeEmptyDOMElement();
   });
 });

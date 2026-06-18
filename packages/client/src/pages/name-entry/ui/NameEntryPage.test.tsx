@@ -69,7 +69,5 @@ describe("NameEntryPage", () => {
     render(<NameEntryPage onJoined={vi.fn()} />);
 
     expect(screen.getByText("Player name is required")).toBeInTheDocument();
-    joinGameState.isError = false;
-    joinGameState.error = null;
   });
 });
