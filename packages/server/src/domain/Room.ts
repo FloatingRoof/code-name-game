@@ -46,6 +46,7 @@ export class Room {
       cards: [],
       turn: "red",
       currentClue: null,
+      selectedCardIds: [],
       teams: {
         red: { color: "red", remaining: 0 },
         blue: { color: "blue", remaining: 0 },
@@ -151,6 +152,33 @@ export class Room {
     this.touch();
   }
 
+  allPlayersDisconnected(): boolean {
+    return this.state.players.length > 0 && this.state.players.every((p) => !p.connected);
+  }
+
+  /** Resets the room to its initial lobby state. Called when every player has disconnected. */
+  reset(): void {
+    for (const timer of this.removalTimers.values()) clearTimeout(timer);
+    this.removalTimers.clear();
+    this.playerSockets.clear();
+    this.state = {
+      ...this.state,
+      phase: "lobby",
+      players: [],
+      cards: [],
+      turn: "red",
+      currentClue: null,
+      selectedCardIds: [],
+      teams: {
+        red: { color: "red", remaining: 0 },
+        blue: { color: "blue", remaining: 0 },
+      },
+      winner: null,
+      winReason: null,
+      lastActivityAt: Date.now(),
+    };
+  }
+
   setTeam(playerId: string, team: TeamColor): Result<void> {
     if (this.state.phase !== "lobby") {
       return err("INVALID_TEAM", "Cannot change team after the game has started");
@@ -236,6 +264,7 @@ export class Room {
     this.state.turn = startingTeam;
     this.state.phase = "in_progress";
     this.state.currentClue = null;
+    this.state.selectedCardIds = [];
     this.state.winner = null;
     this.state.winReason = null;
     this.state.teams = {
@@ -268,59 +297,101 @@ export class Room {
       number,
       byPlayerId: playerId,
       guessesRemaining: guessesAllowedForClue(number),
+      guessesUsed: 0,
     };
+    this.state.selectedCardIds = [];
     this.touch();
     return ok(undefined);
   }
 
-  revealCard(playerId: string, cardId: number): Result<void> {
+  /**
+   * Toggles a card in/out of the active team's single tentative pick. Picking
+   * a different card while one is already selected replaces it. Selection is
+   * visible to everyone on the team, but only `confirmGuess` actually reveals it.
+   */
+  toggleCardSelection(playerId: string, cardId: number): Result<void> {
     if (this.state.phase !== "in_progress")
       return err("GAME_ALREADY_FINISHED", "Game is not in progress");
     const player = this.findPlayer(playerId);
     if (!player) return err("PLAYER_NOT_FOUND", "Player not found in this room");
-    if (player.role === "spectator") return err("FORBIDDEN_ROLE", "Spectators cannot reveal cards");
+    if (player.role === "spectator") return err("FORBIDDEN_ROLE", "Spectators cannot select cards");
     if (player.team !== this.state.turn) return err("NOT_YOUR_TURN", "It is not your team's turn");
-    if (player.role === "captain") return err("FORBIDDEN_ROLE", "Captains cannot reveal cards");
+    if (player.role === "captain") return err("FORBIDDEN_ROLE", "Captains cannot select cards");
     if (!this.state.currentClue) return err("NO_ACTIVE_CLUE", "No active clue to guess against");
 
     const card = this.state.cards.find((c) => c.id === cardId);
     if (!card) return err("CARD_NOT_FOUND", `No card with id ${cardId}`);
     if (card.revealed) return err("CARD_ALREADY_REVEALED", "This card has already been revealed");
 
-    const result = resolveGuess(this.state, cardId, this.state.currentClue.guessesRemaining);
+    this.state.selectedCardIds = this.state.selectedCardIds.includes(cardId) ? [] : [cardId];
+    this.touch();
+    return ok(undefined);
+  }
+
+  /**
+   * Reveals the active team's single selected card. A correct guess lets the
+   * team keep guessing (up to the clue's allowance); any other outcome — or
+   * running out of guesses — ends the turn immediately.
+   */
+  confirmGuess(playerId: string): Result<void> {
+    if (this.state.phase !== "in_progress")
+      return err("GAME_ALREADY_FINISHED", "Game is not in progress");
+    const player = this.findPlayer(playerId);
+    if (!player) return err("PLAYER_NOT_FOUND", "Player not found in this room");
+    if (player.role === "spectator") return err("FORBIDDEN_ROLE", "Spectators cannot guess");
+    if (player.team !== this.state.turn) return err("NOT_YOUR_TURN", "It is not your team's turn");
+    if (player.role === "captain") return err("FORBIDDEN_ROLE", "Captains cannot guess");
+    const clue = this.state.currentClue;
+    if (!clue) return err("NO_ACTIVE_CLUE", "No active clue to guess against");
+    const cardId = this.state.selectedCardIds[0];
+    if (cardId === undefined) return err("NO_CARD_SELECTED", "Select a card before confirming");
+
+    const card = this.state.cards.find((c) => c.id === cardId);
+    if (!card) return err("CARD_NOT_FOUND", `No card with id ${cardId}`);
+    if (card.revealed) return err("CARD_ALREADY_REVEALED", "This card has already been revealed");
+
+    const result = resolveGuess(this.state, cardId, clue.guessesRemaining);
     this.state.cards = result.cards;
     this.state.teams = result.teams;
+    this.state.selectedCardIds = [];
 
     if (result.winner) {
       this.state.winner = result.winner;
       this.state.winReason = result.winReason;
       this.state.phase = "finished";
-      this.state.currentClue = null;
       this.state.turn = result.nextTurn;
+      this.state.currentClue = null;
     } else if (result.turnEnded) {
       this.state.turn = result.nextTurn;
       this.state.currentClue = null;
     } else {
       this.state.currentClue = {
-        ...this.state.currentClue,
+        ...clue,
         guessesRemaining: result.guessesRemaining,
+        guessesUsed: clue.guessesUsed + 1,
       };
     }
     this.touch();
     return ok(undefined);
   }
 
+  /** Voluntarily passes the active team's turn. Requires at least one confirmed guess this turn. */
   endTurn(playerId: string): Result<void> {
     if (this.state.phase !== "in_progress")
       return err("GAME_ALREADY_FINISHED", "Game is not in progress");
     const player = this.findPlayer(playerId);
     if (!player) return err("PLAYER_NOT_FOUND", "Player not found in this room");
     if (player.role === "spectator") return err("FORBIDDEN_ROLE", "Spectators cannot end the turn");
+    if (player.role === "captain") return err("FORBIDDEN_ROLE", "Captains cannot end the turn");
     if (player.team !== this.state.turn) return err("NOT_YOUR_TURN", "It is not your team's turn");
     if (!this.state.currentClue) return err("NO_ACTIVE_CLUE", "No active clue to pass on");
+    if (this.state.currentClue.guessesUsed < 1) {
+      return err("MUST_GUESS_FIRST", "Your team must guess at least once before passing");
+    }
 
     this.state.turn = otherTeam(this.state.turn);
     this.state.currentClue = null;
+    this.state.selectedCardIds = [];
     this.touch();
     return ok(undefined);
   }

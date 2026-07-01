@@ -8,7 +8,8 @@ export const ClientEvent = {
   PlayerReady: "player_ready",
   StartGame: "start_game",
   SubmitClue: "submit_clue",
-  RevealCard: "reveal_card",
+  ToggleCardSelection: "toggle_card_selection",
+  ConfirmGuess: "confirm_guess",
   EndTurn: "end_turn",
   LeaveGame: "leave_game",
   RequestState: "request_state",
@@ -52,7 +53,7 @@ export interface SubmitCluePayload {
   number: number;
 }
 
-export interface RevealCardPayload {
+export interface ToggleCardSelectionPayload {
   cardId: number;
 }
 
@@ -72,7 +73,9 @@ export type ErrorCode =
   | "CAPTAIN_SLOT_TAKEN"
   | "CANNOT_START"
   | "GAME_ALREADY_FINISHED"
-  | "INVALID_TEAM";
+  | "INVALID_TEAM"
+  | "NO_CARD_SELECTED"
+  | "MUST_GUESS_FIRST";
 
 export interface ErrorPayload {
   code: ErrorCode;
@@ -111,7 +114,8 @@ export interface ClientToServerEvents {
   player_ready: (payload: PlayerReadyPayload, ack: AckCallback) => void;
   start_game: (ack: AckCallback) => void;
   submit_clue: (payload: SubmitCluePayload, ack: AckCallback) => void;
-  reveal_card: (payload: RevealCardPayload, ack: AckCallback) => void;
+  toggle_card_selection: (payload: ToggleCardSelectionPayload, ack: AckCallback) => void;
+  confirm_guess: (ack: AckCallback) => void;
   end_turn: (ack: AckCallback) => void;
   leave_game: (ack: AckCallback) => void;
   request_state: (ack: AckCallback) => void;

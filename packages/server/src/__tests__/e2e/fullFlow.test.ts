@@ -54,28 +54,24 @@ describe("full game flow: 2v2 + spectator, win by finding all words", () => {
     const activeCaptain = startingTeam === "red" ? lobby.alice : lobby.cara;
     const activeOperative = startingTeam === "red" ? lobby.bob : lobby.dee;
 
-    // Reveal every own-color card for the active team, one clue per card to keep this simple.
+    // Reveal every own-color card for the active team. A correct guess never ends the
+    // turn, so one generous clue is enough to confirm all of them in a single turn.
     const ownCards = aliceState.cards.filter((c) => c.color === startingTeam);
     expect(ownCards).toHaveLength(9); // starting team always gets 9 in the standard distribution
 
+    const clueAck = await emitAck(activeCaptain.socket, "submit_clue", {
+      word: "WORD",
+      number: ownCards.length - 1, // +1 rule grants exactly ownCards.length guesses
+    });
+    expect(clueAck.ok).toBe(true);
+
     for (const card of ownCards) {
-      const clueAck = await emitAck(activeCaptain.socket, "submit_clue", {
-        word: "WORD",
-        number: 1,
+      const selectAck = await emitAck(activeOperative.socket, "toggle_card_selection", {
+        cardId: card.id,
       });
-      expect(clueAck.ok).toBe(true);
-      const revealAck = await emitAck(activeOperative.socket, "reveal_card", { cardId: card.id });
-      expect(revealAck.ok).toBe(true);
-      await emitAck(activeOperative.socket, "end_turn");
-      // captain submits a fresh clue again immediately since revealCard ends the turn after 1 guess;
-      // re-fetch latest state to check if the game already ended.
-      await waitFor(() => activeCaptain.latestState() !== undefined);
-      if (activeCaptain.latestState().winner) break;
-      // it's the other team's turn now (since we ended turn) -- pass it back for the next clue
-      const otherCaptain = activeCaptain === lobby.alice ? lobby.cara : lobby.alice;
-      const otherOperative = activeCaptain === lobby.alice ? lobby.dee : lobby.bob;
-      await emitAck(otherCaptain.socket, "submit_clue", { word: "PASS", number: 0 });
-      await emitAck(otherOperative.socket, "end_turn");
+      expect(selectAck.ok).toBe(true);
+      const confirmAck = await emitAck(activeOperative.socket, "confirm_guess");
+      expect(confirmAck.ok).toBe(true);
     }
 
     await waitFor(() => Boolean(lobby.alice.latestState().winner), 4000);

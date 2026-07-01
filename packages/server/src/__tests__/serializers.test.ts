@@ -32,6 +32,7 @@ function makeState(phase: GameState["phase"] = "in_progress"): GameState {
     ],
     turn: "red",
     currentClue: null,
+    selectedCardIds: [],
     teams: { red: { color: "red", remaining: 1 }, blue: { color: "blue", remaining: 0 } },
     winner: null,
     winReason: null,

@@ -29,6 +29,7 @@ export function toPublicState(
     cards,
     turn: state.turn,
     currentClue: state.currentClue,
+    selectedCardIds: state.selectedCardIds,
     teams: state.teams,
     winner: state.winner,
     winReason: state.winReason,

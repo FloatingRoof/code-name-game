@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { JoinGameAck } from "@codenames/shared";
+import { GameBoardPage } from "../pages/game-board";
 import { LobbyPage } from "../pages/lobby";
 import { NameEntryPage } from "../pages/name-entry";
 import { TeamSelectPage } from "../pages/team-select";
@@ -26,15 +27,9 @@ function AppContent() {
         <TeamSelectPage myPlayerId={session.playerId} />
       ) : gameState?.phase === "lobby" ? (
         <LobbyPage myPlayerId={session.playerId} />
-      ) : (
-        <main>
-          <p>
-            Joined as player <strong>{session.playerId}</strong> in room{" "}
-            <strong>{session.roomCode}</strong>.
-          </p>
-          <pre>{JSON.stringify(gameState, null, 2)}</pre>
-        </main>
-      )}
+      ) : gameState ? (
+        <GameBoardPage myPlayerId={session.playerId} />
+      ) : null}
     </>
   );
 }

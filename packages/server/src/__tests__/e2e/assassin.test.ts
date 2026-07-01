@@ -44,10 +44,13 @@ describe("assassin card ends the game immediately", () => {
     });
     expect(clueAck.ok).toBe(true);
 
-    const revealAck = await emitAck(activeOperative.socket, "reveal_card", {
+    const selectAck = await emitAck(activeOperative.socket, "toggle_card_selection", {
       cardId: assassinCard!.id,
     });
-    expect(revealAck.ok).toBe(true);
+    expect(selectAck.ok).toBe(true);
+
+    const confirmAck = await emitAck(activeOperative.socket, "confirm_guess");
+    expect(confirmAck.ok).toBe(true);
 
     await waitFor(() => lobby.cara.latestState()?.phase === "finished");
     const finalState = lobby.alice.latestState();

@@ -25,6 +25,8 @@ export interface Clue {
   number: number;
   byPlayerId: string;
   guessesRemaining: number;
+  /** Correct guesses already confirmed this turn; the team must make at least one before passing. */
+  guessesUsed: number;
 }
 
 export interface TeamState {
@@ -39,6 +41,8 @@ export interface GameState {
   cards: Card[];
   turn: TeamColor;
   currentClue: Clue | null;
+  /** At most one card id, tentatively picked by the active team and visible to everyone, awaiting confirmation. */
+  selectedCardIds: number[];
   teams: Record<TeamColor, TeamState>;
   winner: TeamColor | null;
   winReason: WinReason;
@@ -62,6 +66,7 @@ export interface PublicGameState {
   cards: PublicCard[];
   turn: TeamColor;
   currentClue: Clue | null;
+  selectedCardIds: number[];
   teams: Record<TeamColor, TeamState>;
   winner: TeamColor | null;
   winReason: WinReason;

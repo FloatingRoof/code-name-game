@@ -253,50 +253,187 @@ describe("Room gameplay flow", () => {
     expect(second.code).toBe("CLUE_ALREADY_ACTIVE");
   });
 
-  it("rejects reveal_card with no active clue", () => {
+  it("rejects toggleCardSelection with no active clue", () => {
     const activeOperative = room.state.players.find(
       (p) => p.team === room.state.turn && p.role === "operative",
     )!.id;
-    const result = room.revealCard(activeOperative, 0);
+    const result = room.toggleCardSelection(activeOperative, 0);
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.code).toBe("NO_ACTIVE_CLUE");
   });
 
-  it("rejects reveal_card from the inactive team", () => {
+  it("rejects toggleCardSelection from the inactive team", () => {
     const activeCaptainId = room.state.turn === "red" ? red1 : blue1;
     room.submitClue(activeCaptainId, "FRUIT", 2);
     const inactiveOperative = room.state.players.find(
       (p) => p.team !== room.state.turn && p.role === "operative",
     )!.id;
-    const result = room.revealCard(inactiveOperative, 0);
+    const result = room.toggleCardSelection(inactiveOperative, 0);
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.code).toBe("NOT_YOUR_TURN");
   });
 
-  it("full turn: own-color guess keeps the turn, opponent-color guess switches it", () => {
+  it("toggleCardSelection selects then deselects a single card", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 2);
+    const activeOperative = room.state.players.find(
+      (p) => p.team === activeTeam && p.role === "operative",
+    )!.id;
+
+    room.toggleCardSelection(activeOperative, 0);
+    expect(room.state.selectedCardIds).toEqual([0]);
+
+    room.toggleCardSelection(activeOperative, 0);
+    expect(room.state.selectedCardIds).toEqual([]);
+  });
+
+  it("toggleCardSelection picking a different card replaces the previous selection", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 2);
+    const activeOperative = room.state.players.find(
+      (p) => p.team === activeTeam && p.role === "operative",
+    )!.id;
+
+    room.toggleCardSelection(activeOperative, 0);
+    room.toggleCardSelection(activeOperative, 1);
+    expect(room.state.selectedCardIds).toEqual([1]);
+  });
+
+  it("rejects a captain calling endTurn", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 2);
+
+    const result = room.endTurn(activeCaptainId);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.code).toBe("FORBIDDEN_ROLE");
+  });
+
+  it("rejects a captain toggling card selection", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 2);
+
+    const result = room.toggleCardSelection(activeCaptainId, 0);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.code).toBe("FORBIDDEN_ROLE");
+  });
+
+  it("rejects confirmGuess with no card selected", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 2);
+    const activeOperative = room.state.players.find(
+      (p) => p.team === activeTeam && p.role === "operative",
+    )!.id;
+
+    const result = room.confirmGuess(activeOperative);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.code).toBe("NO_CARD_SELECTED");
+  });
+
+  it("rejects endTurn before the team has guessed at least once", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 2);
+    const activeOperative = room.state.players.find(
+      (p) => p.team === activeTeam && p.role === "operative",
+    )!.id;
+
+    const result = room.endTurn(activeOperative);
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.code).toBe("MUST_GUESS_FIRST");
+    expect(room.state.turn).toBe(activeTeam);
+  });
+
+  it("confirmGuess reveals an own-color pick and lets the team keep guessing", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 3); // allows 4 guesses
+    const activeOperative = room.state.players.find(
+      (p) => p.team === activeTeam && p.role === "operative",
+    )!.id;
+    const ownCard = room.state.cards.find((c) => c.color === activeTeam)!;
+    const beforeRemaining = room.state.teams[activeTeam].remaining;
+
+    room.toggleCardSelection(activeOperative, ownCard.id);
+    const result = room.confirmGuess(activeOperative);
+
+    expect(result.ok).toBe(true);
+    expect(room.state.cards.find((c) => c.id === ownCard.id)?.revealed).toBe(true);
+    expect(room.state.teams[activeTeam].remaining).toBe(beforeRemaining - 1);
+    expect(room.state.turn).toBe(activeTeam); // still the same team's turn
+    expect(room.state.currentClue?.guessesRemaining).toBe(3);
+    expect(room.state.currentClue?.guessesUsed).toBe(1);
+    expect(room.state.selectedCardIds).toEqual([]);
+  });
+
+  it("a wrong guess ends the turn immediately, even on the first guess", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 2);
+    const activeOperative = room.state.players.find(
+      (p) => p.team === activeTeam && p.role === "operative",
+    )!.id;
+    const otherColorCard = room.state.cards.find(
+      (c) => !c.revealed && c.color !== activeTeam && c.color !== "assassin",
+    )!;
+
+    room.toggleCardSelection(activeOperative, otherColorCard.id);
+    const result = room.confirmGuess(activeOperative);
+
+    expect(result.ok).toBe(true);
+    expect(room.state.cards.find((c) => c.id === otherColorCard.id)?.revealed).toBe(true);
+    expect(room.state.turn).not.toBe(activeTeam);
+    expect(room.state.currentClue).toBeNull();
+  });
+
+  it("the team may stop after one correct guess and explicitly pass the turn", () => {
     const activeTeam = room.state.turn;
     const activeCaptainId = activeTeam === "red" ? red1 : blue1;
     room.submitClue(activeCaptainId, "FRUIT", 3);
     const activeOperative = room.state.players.find(
       (p) => p.team === activeTeam && p.role === "operative",
     )!.id;
-
     const ownCard = room.state.cards.find((c) => c.color === activeTeam)!;
-    const beforeRemaining = room.state.teams[activeTeam].remaining;
-    const guess1 = room.revealCard(activeOperative, ownCard.id);
-    expect(guess1.ok).toBe(true);
-    expect(room.state.turn).toBe(activeTeam); // still our turn
-    expect(room.state.teams[activeTeam].remaining).toBe(beforeRemaining - 1);
 
-    const otherColorCard = room.state.cards.find(
-      (c) => !c.revealed && c.color !== activeTeam && c.color !== "assassin",
-    )!;
-    const guess2 = room.revealCard(activeOperative, otherColorCard.id);
-    expect(guess2.ok).toBe(true);
-    expect(room.state.turn).not.toBe(activeTeam); // turn switched
+    room.toggleCardSelection(activeOperative, ownCard.id);
+    room.confirmGuess(activeOperative);
+
+    const result = room.endTurn(activeOperative);
+    expect(result.ok).toBe(true);
+    expect(room.state.turn).not.toBe(activeTeam);
     expect(room.state.currentClue).toBeNull();
+  });
+
+  it("lets a team guess one more time than the clue's number (the +1 rule)", () => {
+    const activeTeam = room.state.turn;
+    const activeCaptainId = activeTeam === "red" ? red1 : blue1;
+    room.submitClue(activeCaptainId, "FRUIT", 1); // allows 2 guesses
+    const activeOperative = room.state.players.find(
+      (p) => p.team === activeTeam && p.role === "operative",
+    )!.id;
+    const ownCards = room.state.cards.filter((c) => c.color === activeTeam).slice(0, 2);
+
+    for (const card of ownCards) {
+      room.toggleCardSelection(activeOperative, card.id);
+      const result = room.confirmGuess(activeOperative);
+      expect(result.ok).toBe(true);
+    }
+
+    expect(ownCards.every((c) => room.state.cards.find((sc) => sc.id === c.id)?.revealed)).toBe(
+      true,
+    );
+    expect(room.state.currentClue).toBeNull(); // guesses exhausted, turn auto-ended
+    expect(room.state.turn).not.toBe(activeTeam);
   });
 
   it("rejects spectator gameplay actions with FORBIDDEN_ROLE", () => {
@@ -305,10 +442,10 @@ describe("Room gameplay flow", () => {
     const activeCaptainId = room.state.turn === "red" ? red1 : blue1;
     room.submitClue(activeCaptainId, "FRUIT", 2);
 
-    const revealResult = room.revealCard(spec.data.id, 0);
-    expect(revealResult.ok).toBe(false);
-    if (revealResult.ok) throw new Error("unreachable");
-    expect(revealResult.code).toBe("FORBIDDEN_ROLE");
+    const selectResult = room.toggleCardSelection(spec.data.id, 0);
+    expect(selectResult.ok).toBe(false);
+    if (selectResult.ok) throw new Error("unreachable");
+    expect(selectResult.code).toBe("FORBIDDEN_ROLE");
 
     const clueResult = room.submitClue(spec.data.id, "X", 1);
     expect(clueResult.ok).toBe(false);
@@ -316,7 +453,7 @@ describe("Room gameplay flow", () => {
     expect(clueResult.code).toBe("FORBIDDEN_ROLE");
   });
 
-  it("ends the game when the assassin card is revealed", () => {
+  it("ends the game when the assassin card is selected and confirmed", () => {
     const activeTeam = room.state.turn;
     const activeCaptainId = activeTeam === "red" ? red1 : blue1;
     room.submitClue(activeCaptainId, "DANGER", 1);
@@ -325,7 +462,9 @@ describe("Room gameplay flow", () => {
     )!.id;
     const assassinCard = room.state.cards.find((c) => c.color === "assassin")!;
 
-    const result = room.revealCard(activeOperative, assassinCard.id);
+    room.toggleCardSelection(activeOperative, assassinCard.id);
+    const result = room.confirmGuess(activeOperative);
+
     expect(result.ok).toBe(true);
     expect(room.state.phase).toBe("finished");
     expect(room.state.winReason).toBe("assassin_revealed");
@@ -395,5 +534,82 @@ describe("Room disconnect removal", () => {
 
     expect(room.findPlayer(playerId)).toBeDefined();
     expect(onRemoved).not.toHaveBeenCalled();
+  });
+});
+
+describe("Room.allPlayersDisconnected / reset", () => {
+  let room: Room;
+
+  beforeEach(() => {
+    room = new Room("TEST");
+  });
+
+  it("allPlayersDisconnected returns false when the room is empty", () => {
+    expect(room.allPlayersDisconnected()).toBe(false);
+  });
+
+  it("allPlayersDisconnected returns false while at least one player is connected", () => {
+    const a = room.join({ name: "Alice" });
+    const b = room.join({ name: "Bob" });
+    if (!a.ok || !b.ok) throw new Error("unreachable");
+
+    room.markDisconnected(a.data.id);
+    expect(room.allPlayersDisconnected()).toBe(false);
+  });
+
+  it("allPlayersDisconnected returns true when every player is disconnected", () => {
+    const a = room.join({ name: "Alice" });
+    const b = room.join({ name: "Bob" });
+    if (!a.ok || !b.ok) throw new Error("unreachable");
+
+    room.markDisconnected(a.data.id);
+    room.markDisconnected(b.data.id);
+    expect(room.allPlayersDisconnected()).toBe(true);
+  });
+
+  it("reset clears players, game state, and pending timers", () => {
+    vi.useFakeTimers();
+    const a = room.join({ name: "Alice" });
+    if (!a.ok) throw new Error("unreachable");
+    room.playerSockets.set(a.data.id, "socket-1");
+
+    room.disconnectSocket(a.data.id, "socket-1");
+    const onRemoved = vi.fn();
+    room.scheduleRemovalIfStillDisconnected(a.data.id, 15_000, onRemoved);
+
+    room.reset();
+
+    expect(room.state.players).toHaveLength(0);
+    expect(room.state.phase).toBe("lobby");
+    expect(room.playerSockets.size).toBe(0);
+
+    // The pending timer must have been cancelled
+    vi.advanceTimersByTime(15_000);
+    expect(onRemoved).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it("reset during an in-progress game returns the room to lobby", () => {
+    const players = ["R1", "R2", "B1", "B2"].map((name) => {
+      const r = room.join({ name });
+      if (!r.ok) throw new Error("unreachable");
+      return r.data;
+    });
+    room.setTeam(players[0].id, "red");
+    room.setTeam(players[1].id, "red");
+    room.setTeam(players[2].id, "blue");
+    room.setTeam(players[3].id, "blue");
+    room.becomeCaptain(players[0].id, "red");
+    room.becomeCaptain(players[2].id, "blue");
+    for (const p of players) room.setReady(p.id, true);
+    room.startGame();
+    expect(room.state.phase).toBe("in_progress");
+
+    room.reset();
+
+    expect(room.state.phase).toBe("lobby");
+    expect(room.state.players).toHaveLength(0);
+    expect(room.state.cards).toHaveLength(0);
+    expect(room.state.winner).toBeNull();
   });
 });

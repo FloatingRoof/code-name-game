@@ -85,6 +85,7 @@ function buildGameState(): PublicGameState {
     cards: [],
     turn: "red",
     currentClue: null,
+    selectedCardIds: [],
     teams: {
       red: { color: "red", remaining: 9 },
       blue: { color: "blue", remaining: 8 },

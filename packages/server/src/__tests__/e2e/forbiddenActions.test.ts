@@ -56,10 +56,15 @@ describe("forbidden / invalid actions are rejected with the right error code", (
     if (clueAck.ok) throw new Error("unreachable");
     expect(clueAck.error?.code).toBe("FORBIDDEN_ROLE");
 
-    const revealAck = await emitAck(watcher.socket, "reveal_card", { cardId: 0 });
-    expect(revealAck.ok).toBe(false);
-    if (revealAck.ok) throw new Error("unreachable");
-    expect(revealAck.error?.code).toBe("FORBIDDEN_ROLE");
+    const selectAck = await emitAck(watcher.socket, "toggle_card_selection", { cardId: 0 });
+    expect(selectAck.ok).toBe(false);
+    if (selectAck.ok) throw new Error("unreachable");
+    expect(selectAck.error?.code).toBe("FORBIDDEN_ROLE");
+
+    const confirmGuessAck = await emitAck(watcher.socket, "confirm_guess");
+    expect(confirmGuessAck.ok).toBe(false);
+    if (confirmGuessAck.ok) throw new Error("unreachable");
+    expect(confirmGuessAck.error?.code).toBe("FORBIDDEN_ROLE");
 
     const endTurnAck = await emitAck(watcher.socket, "end_turn");
     expect(endTurnAck.ok).toBe(false);
@@ -91,7 +96,7 @@ describe("forbidden / invalid actions are rejected with the right error code", (
     expect(inactiveAck.error?.code).toBe("NOT_CAPTAIN");
   });
 
-  it("rejects reveal_card with no active clue, and from the inactive team", async () => {
+  it("rejects toggle_card_selection with no active clue, and from the inactive team", async () => {
     const lobby = await setUpReadyLobby(server.url);
     clients = allClients(lobby);
     await startGameAndWait(lobby);
@@ -101,20 +106,24 @@ describe("forbidden / invalid actions are rejected with the right error code", (
     const inactiveOperative = turn === "red" ? lobby.dee : lobby.bob;
     const activeCaptain = turn === "red" ? lobby.alice : lobby.cara;
 
-    const noClueAck = await emitAck(activeOperative.socket, "reveal_card", { cardId: 0 });
+    const noClueAck = await emitAck(activeOperative.socket, "toggle_card_selection", {
+      cardId: 0,
+    });
     expect(noClueAck.ok).toBe(false);
     if (noClueAck.ok) throw new Error("unreachable");
     expect(noClueAck.error?.code).toBe("NO_ACTIVE_CLUE");
 
     await emitAck(activeCaptain.socket, "submit_clue", { word: "X", number: 1 });
 
-    const wrongTurnAck = await emitAck(inactiveOperative.socket, "reveal_card", { cardId: 0 });
+    const wrongTurnAck = await emitAck(inactiveOperative.socket, "toggle_card_selection", {
+      cardId: 0,
+    });
     expect(wrongTurnAck.ok).toBe(false);
     if (wrongTurnAck.ok) throw new Error("unreachable");
     expect(wrongTurnAck.error?.code).toBe("NOT_YOUR_TURN");
   });
 
-  it("rejects the captain trying to reveal cards themselves", async () => {
+  it("rejects the captain trying to select cards themselves", async () => {
     const lobby = await setUpReadyLobby(server.url);
     clients = allClients(lobby);
     await startGameAndWait(lobby);
@@ -123,9 +132,30 @@ describe("forbidden / invalid actions are rejected with the right error code", (
     const activeCaptain = turn === "red" ? lobby.alice : lobby.cara;
     await emitAck(activeCaptain.socket, "submit_clue", { word: "X", number: 1 });
 
-    const ack = await emitAck(activeCaptain.socket, "reveal_card", { cardId: 0 });
+    const ack = await emitAck(activeCaptain.socket, "toggle_card_selection", { cardId: 0 });
     expect(ack.ok).toBe(false);
     if (ack.ok) throw new Error("unreachable");
     expect(ack.error?.code).toBe("FORBIDDEN_ROLE");
+  });
+
+  it("rejects end_turn before the team has guessed, and confirm_guess with nothing selected", async () => {
+    const lobby = await setUpReadyLobby(server.url);
+    clients = allClients(lobby);
+    await startGameAndWait(lobby);
+
+    const turn = lobby.alice.latestState().turn;
+    const activeCaptain = turn === "red" ? lobby.alice : lobby.cara;
+    const activeOperative = turn === "red" ? lobby.bob : lobby.dee;
+    await emitAck(activeCaptain.socket, "submit_clue", { word: "X", number: 1 });
+
+    const confirmAck = await emitAck(activeOperative.socket, "confirm_guess");
+    expect(confirmAck.ok).toBe(false);
+    if (confirmAck.ok) throw new Error("unreachable");
+    expect(confirmAck.error?.code).toBe("NO_CARD_SELECTED");
+
+    const endTurnAck = await emitAck(activeOperative.socket, "end_turn");
+    expect(endTurnAck.ok).toBe(false);
+    if (endTurnAck.ok) throw new Error("unreachable");
+    expect(endTurnAck.error?.code).toBe("MUST_GUESS_FIRST");
   });
 });

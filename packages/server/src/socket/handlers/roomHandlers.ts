@@ -24,6 +24,14 @@ function scheduleDisconnectRemoval(io: AppServer, room: Room, playerId: string):
   });
 }
 
+function handlePlayerDisconnect(io: AppServer, room: Room, playerId: string): void {
+  if (room.allPlayersDisconnected()) {
+    room.reset();
+  } else {
+    scheduleDisconnectRemoval(io, room, playerId);
+  }
+}
+
 export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
   socket.on(ClientEvent.JoinGame, (payload: JoinGamePayload, ack: AckCallback<JoinGameAck>) => {
     const name = payload.playerName?.trim();
@@ -70,7 +78,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
     const playerId = socket.data.playerId;
     if (room && playerId) {
       if (room.disconnectSocket(playerId, socket.id)) {
-        scheduleDisconnectRemoval(io, room, playerId);
+        handlePlayerDisconnect(io, room, playerId);
       }
       socket.to(room.state.roomCode).emit(ServerEvent.PlayerLeft, { playerId });
       broadcastRoomState(io, room);
@@ -86,7 +94,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
     const playerId = socket.data.playerId;
     if (room && playerId) {
       if (room.disconnectSocket(playerId, socket.id)) {
-        scheduleDisconnectRemoval(io, room, playerId);
+        handlePlayerDisconnect(io, room, playerId);
       }
       broadcastRoomState(io, room);
     }

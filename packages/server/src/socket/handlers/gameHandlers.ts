@@ -1,8 +1,8 @@
 import {
   ClientEvent,
   ServerEvent,
-  type RevealCardPayload,
   type SubmitCluePayload,
+  type ToggleCardSelectionPayload,
 } from "@codenames/shared";
 import type { AckCallback } from "../types.js";
 import {
@@ -20,10 +20,20 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket): void {
     respondToMutation(io, ctx.room, result, ack);
   });
 
-  socket.on(ClientEvent.RevealCard, (payload: RevealCardPayload, ack: AckCallback) => {
+  socket.on(
+    ClientEvent.ToggleCardSelection,
+    (payload: ToggleCardSelectionPayload, ack: AckCallback) => {
+      const ctx = requireRoomAndPlayer(socket, ack);
+      if (!ctx) return;
+      const result = ctx.room.toggleCardSelection(ctx.playerId, payload.cardId);
+      respondToMutation(io, ctx.room, result, ack);
+    },
+  );
+
+  socket.on(ClientEvent.ConfirmGuess, (ack: AckCallback) => {
     const ctx = requireRoomAndPlayer(socket, ack);
     if (!ctx) return;
-    const result = ctx.room.revealCard(ctx.playerId, payload.cardId);
+    const result = ctx.room.confirmGuess(ctx.playerId);
     respondToMutation(io, ctx.room, result, ack);
     const { winner, winReason } = ctx.room.state;
     if (result.ok && winner && winReason) {
